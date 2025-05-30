@@ -1,0 +1,14 @@
+# Negeer alle node_modules
+node_modules
+# Negeer de vendor map als je Composer gebruikt in de Dockerfile
+vendor/
+# Negeer de Git directory en bestanden
+.git
+# Negeer logbestanden
+*.log
+# Negeer lokale configuratiebestanden
+.env
+# Negeer IDE- en editor-bestanden
+.DS_Store
+*.idea
+*.vscode
