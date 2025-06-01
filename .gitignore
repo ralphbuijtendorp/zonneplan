@@ -12,3 +12,11 @@ composer.lock
 # OS files
 .DS_Store
 Thumbs.db
+
+/logs/*
+/data/*
+
+/supervisord.log
+/supervisord.pid
+
+/*.cache

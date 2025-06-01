@@ -1,2 +1,2 @@
-docker build -f Dockerfile -t zonneplan:latest .
+docker build --no-cache -f Dockerfile -t zonneplan:latest .
 
