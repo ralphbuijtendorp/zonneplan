@@ -42,16 +42,30 @@ class DataService {
      * @param array $data Raw energy data
      * @return array Processed data with rankings and additional fields
      */
-    public function enrichEnergyData(array $data): array {
+    public function processElectricityData(array $data): array {
         // Remove null entries first
         $processedData = $this->removeNullEntriesByKey($data, 'total_price_tax_included');
+        return $this->addElectricityRanking($processedData);
+        }
 
+    public function addElectricityRanking (array $data): array {
         // Add rankings
-        $processedData = $this->addRanking($processedData, 'total_price_tax_included', 'rank_total_price');
-        return $this->addRanking($processedData, 'sustainability_score', 'rank_sustainability_score', false);
+        $data = $this->addRanking($data, 'total_price_tax_included', 'rank_total_price');
+        return $this->addRanking($data, 'sustainability_score', 'rank_sustainability_score', false);
     }
 
-    public function getRecords(array $data): array {
+    public function processGasData(array $data): array {
+        // Remove null entries first
+        $processedData = $this->removeNullEntriesByKey($data, 'total_price_tax_included');
+        return $this->addGasRanking($processedData);
+    }
+
+    public function addGasRanking (array $data): array {
+        // Add rankings
+        return $this->addRanking($data, 'total_price_tax_included', 'rank_total_price');
+    }
+
+    public function getElectricityRecords(array $data): array {
 
         $lowest_price = $this->getEntryByRanking($data, 'total_price_tax_included', false);
         $highest_price = $this->getEntryByRanking($data, 'total_price_tax_included', true);
@@ -61,6 +75,18 @@ class DataService {
             "price_low" => $lowest_price,
             "price_high" => $highest_price,
             "sustainability_high" => $highest_sustainability
+        );
+    }
+
+    public function getGasRecords(array $data): array {
+
+        $lowest_price = $this->getEntryByRanking($data, 'total_price_tax_included', false);
+        $highest_price = $this->getEntryByRanking($data, 'total_price_tax_included', true);
+
+
+        return array(
+            "price_low" => $lowest_price,
+            "price_high" => $highest_price
         );
     }
 
@@ -100,8 +126,8 @@ class DataService {
         return date('Y-m-d', strtotime('+1 day'));
     }
 
-    function createFilename($date): string {
-        return "./../data/data_{$date}.json";
+    function createFilename($type, $date): string {
+        return "./../data/data_{$type}_{$date}.json";
     }
 
     function checkCache($filename): bool|array {

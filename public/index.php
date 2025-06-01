@@ -1,10 +1,8 @@
 <?php
 
 use App\Config\Environment;
+use App\Controllers\CronjobController;
 use App\Controllers\DataController;
-use App\Http\HttpClient;
-use App\Services\ResponseService;
-use App\Services\ZonneplandataService;
 use DI\Container;
 use Psr\Log\LoggerInterface;
 use Slim\Factory\AppFactory;
@@ -15,19 +13,6 @@ require __DIR__ . '/../vendor/autoload.php';
 Environment::init();
 
 $container = new Container();
-
-// Register services
-$container->set(HttpClient::class, function() {
-    return new HttpClient();
-});
-
-$container->set(ResponseService::class, function() {
-    return new ResponseService();
-});
-
-$container->set(ZonneplandataService::class, function(Container $container) {
-    return new ZonneplandataService($container->get(HttpClient::class));
-});
 
 AppFactory::setContainer($container);
 $app = AppFactory::create();
@@ -42,8 +27,9 @@ $app = AppFactory::create();
  */
 $app->addErrorMiddleware(true, true, true);
 
-$app->get('/execute_cronjob', [DataController::class, 'store_actual_data']);
-$app->get('/get_data', [DataController::class, 'get_data']);
-
+$app->get('/execute_cronjob_electricity', [CronjobController::class, 'store_electricity_data']);
+$app->get('/execute_cronjob_gas', [CronjobController::class, 'store_gas_data']);
+$app->get('/get_electricity_data', [DataController::class, 'get_electricity_data']);
+$app->get('/get_gas_data', [DataController::class, 'get_gas_data']);
 
 $app->run();

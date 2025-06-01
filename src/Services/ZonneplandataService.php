@@ -6,25 +6,22 @@ use App\Http\HttpClient;
 use DateTimeImmutable;
 use InvalidArgumentException;
 
-class ZonneplandataService
-{
+class ZonneplandataService {
     private HttpClient $httpClient;
     private array $config;
 
-    public function __construct(HttpClient $httpClient)
-    {
+    public function __construct(HttpClient $httpClient) {
         $this->httpClient = $httpClient;
         $this->config = require __DIR__ . '/../../config/api.php';
     }
 
     /**
      * Validate that a date string matches YYYY-MM-DD format
-     * 
+     *
      * @param string $date The date string to validate
      * @throws InvalidArgumentException If the date is invalid
      */
-    private function validateDate(string $date): void
-    {
+    private function validateDate(string $date): void {
         // Check format using regex
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
             throw new InvalidArgumentException(
@@ -43,19 +40,27 @@ class ZonneplandataService
 
     /**
      * Get electricity prices from the Zonneplan API
-     * 
+     *
      * @param string|null $date Optional date in YYYY-MM-DD format
      * @return array The API response data
      * @throws InvalidArgumentException If the date format is invalid
      */
-    public function getData(?string $date = null): array
-    {
+    public function getData($type, ?string $date = null): array {
         $queryParams = [];
         if ($date !== null) {
             $this->validateDate($date);
             $queryParams['date'] = $date;
         }
 
-        return $this->httpClient->get($this->config['zonneplan']['endpoints']['electricity_prices'], $queryParams);
+        if ($type !== 'electricity' && $type !== 'gas') {
+            throw new InvalidArgumentException("Invalid type provided");
+        }
+
+        return $this->httpClient->get($this->config['zonneplan']['endpoints'][$type], $queryParams);
     }
+
+    public function is_empty($data): bool {
+        return empty($data['data']) || empty($data['data'][0]['total_price_tax_included']);
+    }
+
 }
