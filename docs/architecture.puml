@@ -1,0 +1,40 @@
+@startuml
+
+skinparam sequenceMessageAlign center
+skinparam sequenceGroupBorderThickness 2
+skinparam sequenceGroupBodyBackgroundColor transparent
+skinparam ParticipantPadding 50
+skinparam BoxPadding 50
+
+title Zonneplan Energy App
+
+actor Client
+participant Router
+participant Controller
+database Cache
+participant Provider
+participant DataService
+participant API
+
+Client -> Router: HTTP Request
+Router -> Controller: Route to Handler
+
+Controller -> Cache: Check for Cached Data
+
+alt Cache Hit
+    Cache --> Controller: Return Cached Data
+    Controller -> DataService: Process Cached Data
+else Cache Miss
+    Cache --> Controller: No Cache Found
+    Controller -> Provider: Request Fresh Data
+    Provider -> API: Fetch Data
+    API --> Provider: Return Data
+    Provider --> Controller: Return Fresh Data
+    Controller -> Cache: Store New Data
+    Controller -> DataService: Process Fresh Data
+end
+
+DataService --> Controller: Return Processed Data
+Controller -> Client: Send HTTP Response
+
+@enduml

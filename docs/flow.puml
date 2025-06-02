@@ -1,0 +1,27 @@
+@startuml
+
+title Zonneplan Energy App Flow
+
+skinparam defaultTextAlignment center
+skinparam Padding 0
+
+start
+
+:HTTP Request;
+
+:Slim Router;
+
+if (Cache exists?) then (                 yes                 )
+    :Read from Cache;
+
+else (                 no                  )
+    :Call Zonneplan API;
+    :Process Data;
+    :Save to Cache;
+endif
+
+:Send Response;
+
+stop
+
+@enduml
