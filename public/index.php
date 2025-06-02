@@ -3,7 +3,7 @@
 use App\Config\Environment;
 use App\Controllers\CronjobController;
 use App\Controllers\DataController;
-use DI\Container;
+use DI\ContainerBuilder;
 use Psr\Log\LoggerInterface;
 use Slim\Factory\AppFactory;
 
@@ -12,7 +12,10 @@ require __DIR__ . '/../vendor/autoload.php';
 // Initialize environment variables
 Environment::init();
 
-$container = new Container();
+// Create container with configuration
+$containerBuilder = new ContainerBuilder();
+$containerBuilder->addDefinitions(__DIR__ . '/../config/container.php');
+$container = $containerBuilder->build();
 
 AppFactory::setContainer($container);
 $app = AppFactory::create();
