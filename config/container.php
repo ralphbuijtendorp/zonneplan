@@ -1,8 +1,8 @@
 <?php
 
 use App\Interfaces\DataServiceInterface;
-use App\Interfaces\ZonneplandataServiceInterface;
-use App\Services\ZonneplandataService;
+use App\Interfaces\EnergyProviderInterface;
+use App\Providers\ZonneplanProvider;
 use App\Services\DataService;
 use App\Logging\LoggerFactory;
 use Psr\Log\LoggerInterface;
@@ -17,5 +17,5 @@ return [
 
     // Interface bindings
     DataServiceInterface::class => get(DataService::class),
-    ZonneplandataServiceInterface::class => get(ZonneplandataService::class)
+    EnergyProviderInterface::class => get(ZonneplanProvider::class)
 ];

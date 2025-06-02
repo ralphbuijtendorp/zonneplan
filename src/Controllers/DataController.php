@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Services\ResponseService;
-use App\Interfaces\ZonneplandataServiceInterface;
+use App\Interfaces\EnergyProviderInterface;
 use App\Interfaces\DataServiceInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -11,17 +11,17 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class DataController extends BaseController {
     private LoggerInterface $logger;
-    private ZonneplandataServiceInterface $ZonneplandataService;
+    private EnergyProviderInterface $energyProvider;
     private DataServiceInterface $DataService;
 
     public function __construct(
         ResponseService $responseService,
-        ZonneplandataServiceInterface $ZonneplandataService,
+        EnergyProviderInterface $energyProvider,
         DataServiceInterface $DataService,
         LoggerInterface $logger
     ) {
         parent::__construct($responseService);
-        $this->ZonneplandataService = $ZonneplandataService;
+        $this->energyProvider = $energyProvider;
         $this->DataService = $DataService;
         $this->logger = $logger;
     }
@@ -49,9 +49,9 @@ class DataController extends BaseController {
             if (!$data_object) {
                 $this->logger->info('Fetching fresh electricity data');
                 # Retrieve the data from the external source
-                $rawData = $this->ZonneplandataService->getData('electricity', $date);
+                $rawData = $this->energyProvider->getData('electricity', $date);
 
-                if ($this->ZonneplandataService->is_empty($rawData)) {
+                if ($this->energyProvider->is_empty($rawData)) {
                     $this->logger->warning('Empty electricity data received', [
                         'date' => $date
                     ]);
@@ -114,9 +114,9 @@ class DataController extends BaseController {
             if (!$data_object) {
                 $this->logger->info('Fetching fresh gas data');
                 # Retrieve the data from the external source
-                $rawData = $this->ZonneplandataService->getData('gas');
+                $rawData = $this->energyProvider->getData('gas');
 
-                if ($this->ZonneplandataService->is_empty($rawData)) {
+                if ($this->energyProvider->is_empty($rawData)) {
                     $this->logger->warning('Empty gas data received', [
                         'date' => $date
                     ]);

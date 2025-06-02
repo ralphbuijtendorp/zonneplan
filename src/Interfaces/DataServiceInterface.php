@@ -71,4 +71,11 @@ interface DataServiceInterface
      * @return string
      */
     public function createFilename(string $type, string $date): string;
+
+    /**
+     * Get tomorrow's date in Y-m-d format
+     *
+     * @return string
+     */
+    public function getTomorrowDate(): string;
 }

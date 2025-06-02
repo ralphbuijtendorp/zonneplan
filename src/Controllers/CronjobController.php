@@ -4,24 +4,24 @@ namespace App\Controllers;
 
 use App\Services\DataService;
 use App\Services\ResponseService;
-use App\Services\ZonneplandataService;
+use App\Interfaces\EnergyProviderInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
 class CronjobController extends BaseController {
     private LoggerInterface $logger;
-    private ZonneplandataService $ZonneplandataService;
+    private EnergyProviderInterface $energyProvider;
     private DataService $DataService;
 
     public function __construct(
         ResponseService $responseService,
-        ZonneplandataService $ZonneplandataService,
+        EnergyProviderInterface $energyProvider,
         DataService $DataService,
         LoggerInterface $logger
     ) {
         parent::__construct($responseService);
-        $this->ZonneplandataService = $ZonneplandataService;
+        $this->energyProvider = $energyProvider;
         $this->DataService = $DataService;
         $this->logger = $logger;
     }
@@ -43,9 +43,9 @@ class CronjobController extends BaseController {
             foreach ($retrieval_dates as $retrieval_date) {
 
                 # Retrieve the data from the external source
-                $rawData = $this->ZonneplandataService->getData('electricity', $retrieval_date);
+                $rawData = $this->energyProvider->getData('electricity', $retrieval_date);
 
-                if ($this->ZonneplandataService->is_empty($rawData)) {
+                if ($this->energyProvider->is_empty($rawData)) {
                     $this->logger->warning('No electricity data available from API', [
                         'date' => $retrieval_date
                     ]);
@@ -88,7 +88,7 @@ class CronjobController extends BaseController {
 
         try {
             # Retrieve the data from the external source
-            $rawData = $this->ZonneplandataService->getData('gas');
+            $rawData = $this->energyProvider->getData('gas');
 
             if (!empty($rawData['data'])) {
 

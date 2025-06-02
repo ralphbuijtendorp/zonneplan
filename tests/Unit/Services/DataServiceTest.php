@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Tests\Unit\Services;
 
@@ -8,6 +9,24 @@ use App\DTOs\EnergyRecordsDTO;
 use App\Interfaces\DataServiceInterface;
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+
+/**
+ * Class to expose protected methods for testing
+ */
+class TestableDataService extends DataService {
+    public function publicRemoveNullEntriesByKey(array $data, string $key): array {
+        return $this->removeNullEntriesByKey($data, $key);
+    }
+
+    public function publicAddRanking(array $data, string $key, string $rankKey, bool $lower_is_better = true): array {
+        return $this->addRanking($data, $key, $rankKey, $lower_is_better);
+    }
+
+    public function publicGetEntryByRanking(array $dataArray, string $rankingKey, bool $highest = true): array {
+        return $this->getEntryByRanking($dataArray, $rankingKey, $highest);
+    }
+}
 
 class DataServiceTest extends TestCase
 {
@@ -15,7 +34,8 @@ class DataServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->dataService = new DataService();
+        $loggerMock = $this->createMock(LoggerInterface::class);
+        $this->dataService = new TestableDataService($loggerMock);
     }
 
     public function testRemoveNullEntriesByKey(): void
@@ -26,7 +46,7 @@ class DataServiceTest extends TestCase
             ['id' => 3, 'price' => 300],
         ];
 
-        $result = $this->dataService->removeNullEntriesByKey($testData, 'price');
+        $result = $this->dataService->publicRemoveNullEntriesByKey($testData, 'price');
 
         $this->assertCount(2, $result);
         $this->assertEquals(100, $result[0]['price']);
@@ -41,7 +61,7 @@ class DataServiceTest extends TestCase
             ['id' => 3, 'price' => 200],
         ];
 
-        $result = $this->dataService->addRanking($testData, 'price', 'rank', true);
+        $result = $this->dataService->publicAddRanking($testData, 'price', 'rank', true);
 
         $this->assertEquals(1, $result[1]['rank']);
         $this->assertEquals(2, $result[2]['rank']);
@@ -56,7 +76,7 @@ class DataServiceTest extends TestCase
             ['id' => 3, 'price' => 200],
         ];
 
-        $result = $this->dataService->addRanking($testData, 'price', 'rank', false);
+        $result = $this->dataService->publicAddRanking($testData, 'price', 'rank', false);
 
         $this->assertEquals(3, $result[1]['rank']);
         $this->assertEquals(2, $result[2]['rank']);
@@ -146,8 +166,8 @@ class DataServiceTest extends TestCase
             ['value' => 300, 'rank' => 3]
         ];
 
-        $highest = $this->dataService->getEntryByRanking($testData, 'rank', true);
-        $lowest = $this->dataService->getEntryByRanking($testData, 'rank', false);
+        $highest = $this->dataService->publicGetEntryByRanking($testData, 'rank', true);
+        $lowest = $this->dataService->publicGetEntryByRanking($testData, 'rank', false);
 
         $this->assertEquals(3, $highest['rank']);
         $this->assertEquals(1, $lowest['rank']);

@@ -1,10 +1,11 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Interfaces;
 
 use InvalidArgumentException;
 
-interface ZonneplandataServiceInterface
+interface EnergyProviderInterface
 {
     /**
      * Get data from the energy provider API

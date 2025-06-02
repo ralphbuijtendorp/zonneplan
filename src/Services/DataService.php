@@ -17,7 +17,7 @@ class DataService implements DataServiceInterface {
         $this->logger = $logger;
     }
 
-    private function addRanking(array $data, string $key, string $rankKey, bool $lower_is_better = true): array {
+    protected function addRanking(array $data, string $key, string $rankKey, bool $lower_is_better = true): array {
         $ranked = [];
         foreach ($data as $index => $item) {
             $ranked[$index] = ['value' => $item[$key], 'index' => $index];
@@ -36,7 +36,7 @@ class DataService implements DataServiceInterface {
         return $data;
     }
 
-    private function removeNullEntriesByKey(array $data, string $key): array {
+    protected function removeNullEntriesByKey(array $data, string $key): array {
         $filteredArray = [];
         foreach ($data as $item) {
             if (isset($item[$key]) && $item[$key] !== null) {
@@ -119,7 +119,7 @@ class DataService implements DataServiceInterface {
         );
     }
 
-    private function getEntryByRanking(array $dataArray, string $rankingKey, bool $highest = true): array {
+    protected function getEntryByRanking(array $dataArray, string $rankingKey, bool $highest = true): array {
         $bestEntry = $dataArray[0];
         foreach ($dataArray as $entry) {
             if (isset($entry[$rankingKey])) {
@@ -160,7 +160,7 @@ class DataService implements DataServiceInterface {
         return date('Y-m-d');
     }
 
-    private function getTomorrowDate(): string {
+    public function getTomorrowDate(): string {
         return date('Y-m-d', strtotime('+1 day'));
     }
 
