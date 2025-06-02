@@ -3,8 +3,11 @@
 namespace App\Services;
 
 use Exception;
+use App\DTOs\EnergyDataDTO;
+use App\DTOs\EnergyRecordsDTO;
+use App\Interfaces\DataServiceInterface;
 
-class DataService {
+class DataService implements DataServiceInterface {
 
     function addRanking($data, $key, $rankKey, $lower_is_better = true): array {
         $ranked = [];
@@ -65,28 +68,25 @@ class DataService {
         return $this->addRanking($data, 'total_price_tax_included', 'rank_total_price');
     }
 
-    public function getElectricityRecords(array $data): array {
-
+    public function getElectricityRecords(array $data): EnergyRecordsDTO {
         $lowest_price = $this->getEntryByRanking($data, 'total_price_tax_included', false);
         $highest_price = $this->getEntryByRanking($data, 'total_price_tax_included', true);
         $highest_sustainability = $this->getEntryByRanking($data, 'rank_sustainability_score', false);
 
-        return array(
-            "price_low" => $lowest_price,
-            "price_high" => $highest_price,
-            "sustainability_high" => $highest_sustainability
+        return new EnergyRecordsDTO(
+            priceLow: EnergyDataDTO::fromArray($lowest_price),
+            priceHigh: EnergyDataDTO::fromArray($highest_price),
+            sustainabilityHigh: EnergyDataDTO::fromArray($highest_sustainability)
         );
     }
 
-    public function getGasRecords(array $data): array {
-
+    public function getGasRecords(array $data): EnergyRecordsDTO {
         $lowest_price = $this->getEntryByRanking($data, 'total_price_tax_included', false);
         $highest_price = $this->getEntryByRanking($data, 'total_price_tax_included', true);
 
-
-        return array(
-            "price_low" => $lowest_price,
-            "price_high" => $highest_price
+        return new EnergyRecordsDTO(
+            priceLow: EnergyDataDTO::fromArray($lowest_price),
+            priceHigh: EnergyDataDTO::fromArray($highest_price)
         );
     }
 

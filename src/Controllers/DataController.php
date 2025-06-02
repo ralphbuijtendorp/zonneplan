@@ -2,18 +2,18 @@
 
 namespace App\Controllers;
 
-use App\Services\DataService;
 use App\Services\ResponseService;
-use App\Services\ZonneplandataService;
+use App\Interfaces\ZonneplandataServiceInterface;
+use App\Interfaces\DataServiceInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 class DataController extends BaseController {
-    private ZonneplandataService $ZonneplandataService;
-    private DataService $DataService;
+    private ZonneplandataServiceInterface $ZonneplandataService;
+    private DataServiceInterface $DataService;
 
-    public function __construct(ResponseService $responseFactory, ZonneplandataService $ZonneplandataService, DataService $DataService) {
-        parent::__construct($responseFactory);
+    public function __construct(ResponseService $responseService, ZonneplandataServiceInterface $ZonneplandataService, DataServiceInterface $DataService) {
+        parent::__construct($responseService);
         $this->ZonneplandataService = $ZonneplandataService;
         $this->DataService = $DataService;
     }
@@ -50,7 +50,7 @@ class DataController extends BaseController {
 
                 # Return the final response
                 $data_object = array(
-                    "records" => $records,
+                    "records" => $records->toArray(),
                     "data" => $processedData
                 );
 
@@ -96,7 +96,7 @@ class DataController extends BaseController {
 
                 # Return the final response
                 $data_object = array(
-                    "records" => $records,
+                    "records" => $records->toArray(),
                     "data" => $processedData
                 );
 

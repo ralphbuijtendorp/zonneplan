@@ -3,12 +3,15 @@
 namespace Tests\Unit\Services;
 
 use App\Services\DataService;
+use App\DTOs\EnergyDataDTO;
+use App\DTOs\EnergyRecordsDTO;
+use App\Interfaces\DataServiceInterface;
 use Exception;
 use PHPUnit\Framework\TestCase;
 
 class DataServiceTest extends TestCase
 {
-    private DataService $dataService;
+    private DataServiceInterface $dataService;
 
     protected function setUp(): void
     {
@@ -86,7 +89,7 @@ class DataServiceTest extends TestCase
         $this->assertEquals(2, $result[0]['rank_sustainability_score']);
     }
 
-    public function testGetRecords(): void
+    public function testGetElectricityRecords(): void
     {
         $testData = [
             [
@@ -103,9 +106,36 @@ class DataServiceTest extends TestCase
 
         $result = $this->dataService->getElectricityRecords($testData);
 
-        $this->assertEquals(100, $result['price_low']['total_price_tax_included']);
-        $this->assertEquals(200, $result['price_high']['total_price_tax_included']);
-        $this->assertEquals(90, $result['sustainability_high']['sustainability_score']);
+        $this->assertInstanceOf(EnergyRecordsDTO::class, $result);
+        $this->assertInstanceOf(EnergyDataDTO::class, $result->priceLow);
+        $this->assertInstanceOf(EnergyDataDTO::class, $result->priceHigh);
+        $this->assertInstanceOf(EnergyDataDTO::class, $result->sustainabilityHigh);
+        
+        $this->assertEquals(100, $result->priceLow->totalPriceTaxIncluded);
+        $this->assertEquals(200, $result->priceHigh->totalPriceTaxIncluded);
+        $this->assertEquals(90, $result->sustainabilityHigh->sustainabilityScore);
+    }
+
+    public function testGetGasRecords(): void
+    {
+        $testData = [
+            [
+                'total_price_tax_included' => 100
+            ],
+            [
+                'total_price_tax_included' => 200
+            ]
+        ];
+
+        $result = $this->dataService->getGasRecords($testData);
+
+        $this->assertInstanceOf(EnergyRecordsDTO::class, $result);
+        $this->assertInstanceOf(EnergyDataDTO::class, $result->priceLow);
+        $this->assertInstanceOf(EnergyDataDTO::class, $result->priceHigh);
+        $this->assertNull($result->sustainabilityHigh);
+        
+        $this->assertEquals(100, $result->priceLow->totalPriceTaxIncluded);
+        $this->assertEquals(200, $result->priceHigh->totalPriceTaxIncluded);
     }
 
     public function testGetEntryByRanking(): void
