@@ -41,12 +41,12 @@ interface DataServiceInterface
     /**
      * Save data to a file
      *
-     * @param mixed $data Data to save
+     * @param array $data Data to save
      * @param string $filename Target filename
      * @return bool Success status
      * @throws \Exception If file write fails
      */
-    public function save_actual_data_to_file($data, string $filename): bool;
+    public function save_actual_data_to_file(array $data, string $filename): bool;
 
     /**
      * Check if data exists in cache

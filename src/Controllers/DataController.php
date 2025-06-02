@@ -5,40 +5,56 @@ namespace App\Controllers;
 use App\Services\ResponseService;
 use App\Interfaces\ZonneplandataServiceInterface;
 use App\Interfaces\DataServiceInterface;
+use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 class DataController extends BaseController {
+    private LoggerInterface $logger;
     private ZonneplandataServiceInterface $ZonneplandataService;
     private DataServiceInterface $DataService;
 
-    public function __construct(ResponseService $responseService, ZonneplandataServiceInterface $ZonneplandataService, DataServiceInterface $DataService) {
+    public function __construct(
+        ResponseService $responseService,
+        ZonneplandataServiceInterface $ZonneplandataService,
+        DataServiceInterface $DataService,
+        LoggerInterface $logger
+    ) {
         parent::__construct($responseService);
         $this->ZonneplandataService = $ZonneplandataService;
         $this->DataService = $DataService;
+        $this->logger = $logger;
     }
 
     public function get_electricity_data(ServerRequestInterface $request): ResponseInterface {
-        $queryParams = $request->getQueryParams();
-        $date = $queryParams['date'] ?? null;
+        $this->logger->info('Handling electricity data request', [
+            'query' => $request->getQueryParams()
+        ]);
 
-        if ($date == null) {
-            $date = $this->DataService->getCurrentDate();
-        }
+        try {
+            $queryParams = $request->getQueryParams();
+            $date = $queryParams['date'] ?? null;
 
-        $filename = $this->DataService->createFilename('electricity', $date);
+            if ($date == null) {
+                $date = $this->DataService->getCurrentDate();
+            }
 
-        # Check if we already have the requested data in cache
-        # We could implement a redis construction here, but for simplicity it's a psychical cache on the same hard drive
-        # This does eliminates an extra SPOF and a extra network element which also can cause delays
-        $data_object = $this->DataService->checkCache($filename);
+            $filename = $this->DataService->createFilename('electricity', $date);
 
-        if (!$data_object) {
-            try {
+            # Check if we already have the requested data in cache
+            # We could implement a redis construction here, but for simplicity it's a psychical cache on the same hard drive
+            # This does eliminates an extra SPOF and a extra network element which also can cause delays
+            $data_object = $this->DataService->checkCache($filename);
+
+            if (!$data_object) {
+                $this->logger->info('Fetching fresh electricity data');
                 # Retrieve the data from the external source
                 $rawData = $this->ZonneplandataService->getData('electricity', $date);
 
                 if ($this->ZonneplandataService->is_empty($rawData)) {
+                    $this->logger->warning('Empty electricity data received', [
+                        'date' => $date
+                    ]);
                     return $this->response(['error' => "No date found for this date"], 404);
                 }
 
@@ -57,34 +73,53 @@ class DataController extends BaseController {
                 # Save the array as a json object
                 $this->DataService->save_actual_data_to_file($data_object, $filename);
 
-            } catch (\Exception $e) {
-                return $this->response(['error' => $e->getMessage()],500);
+                $this->logger->info('Successfully processed and cached electricity data', [
+                    'recordCount' => count($processedData)
+                ]);
+            } else {
+                $this->logger->info('Returning cached electricity data');
             }
+
+            return $this->response(array("data" => $data_object), 200);
+
+        } catch (\Exception $e) {
+            $this->logger->error('Error processing electricity data request', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->response(['error' => $e->getMessage()], 500);
         }
-        return $this->response(array("data" => $data_object), 200);
     }
 
     public function get_gas_data(ServerRequestInterface $request): ResponseInterface {
-        $queryParams = $request->getQueryParams();
-        $date = $queryParams['date'] ?? null;
+        $this->logger->info('Handling gas data request', [
+            'query' => $request->getQueryParams()
+        ]);
 
-        if ($date == null) {
-            $date = $this->DataService->getCurrentDate();
-        }
+        try {
+            $queryParams = $request->getQueryParams();
+            $date = $queryParams['date'] ?? null;
 
-        $filename = $this->DataService->createFilename('gas', $date);
+            if ($date == null) {
+                $date = $this->DataService->getCurrentDate();
+            }
 
-        # Check if we already have the requested data in cache
-        # We could implement a redis construction here, but for simplicity it's a psychical cache on the same hard drive
-        # This does eliminates an extra SPOF and a extra network element which also can cause delays
-        $data_object = $this->DataService->checkCache($filename);
+            $filename = $this->DataService->createFilename('gas', $date);
 
-        if (!$data_object) {
-            try {
+            # Check if we already have the requested data in cache
+            # We could implement a redis construction here, but for simplicity it's a psychical cache on the same hard drive
+            # This does eliminates an extra SPOF and a extra network element which also can cause delays
+            $data_object = $this->DataService->checkCache($filename);
+
+            if (!$data_object) {
+                $this->logger->info('Fetching fresh gas data');
                 # Retrieve the data from the external source
                 $rawData = $this->ZonneplandataService->getData('gas');
 
                 if ($this->ZonneplandataService->is_empty($rawData)) {
+                    $this->logger->warning('Empty gas data received', [
+                        'date' => $date
+                    ]);
                     return $this->response(['error' => "No date found for this date"], 404);
                 }
 
@@ -103,10 +138,21 @@ class DataController extends BaseController {
                 # Save the array as a json object
                 $this->DataService->save_actual_data_to_file($data_object, $filename);
 
-            } catch (\Exception $e) {
-                return $this->response(['error' => $e->getMessage()],500);
+                $this->logger->info('Successfully processed and cached gas data', [
+                    'recordCount' => count($processedData)
+                ]);
+            } else {
+                $this->logger->info('Returning cached gas data');
             }
+
+            return $this->response(array("data" => $data_object), 200);
+
+        } catch (\Exception $e) {
+            $this->logger->error('Error processing gas data request', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->response(['error' => $e->getMessage()], 500);
         }
-        return $this->response(array("data" => $data_object), 200);
     }
 }

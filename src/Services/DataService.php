@@ -6,8 +6,15 @@ use Exception;
 use App\DTOs\EnergyDataDTO;
 use App\DTOs\EnergyRecordsDTO;
 use App\Interfaces\DataServiceInterface;
+use Psr\Log\LoggerInterface;
 
 class DataService implements DataServiceInterface {
+    private LoggerInterface $logger;
+
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
 
     function addRanking($data, $key, $rankKey, $lower_is_better = true): array {
         $ranked = [];
@@ -46,10 +53,21 @@ class DataService implements DataServiceInterface {
      * @return array Processed data with rankings and additional fields
      */
     public function processElectricityData(array $data): array {
+        $this->logger->info('Processing electricity data', [
+            'recordCount' => count($data)
+        ]);
+
         // Remove null entries first
         $processedData = $this->removeNullEntriesByKey($data, 'total_price_tax_included');
-        return $this->addElectricityRanking($processedData);
-        }
+        $processedData = $this->addRanking($processedData, 'total_price_tax_included', 'rank_total_price', true);
+        $processedData = $this->addRanking($processedData, 'sustainability_score', 'rank_sustainability_score', false);
+
+        $this->logger->debug('Processed electricity data', [
+            'processedRecords' => count($processedData)
+        ]);
+
+        return $processedData;
+    }
 
     public function addElectricityRanking (array $data): array {
         // Add rankings
@@ -58,9 +76,19 @@ class DataService implements DataServiceInterface {
     }
 
     public function processGasData(array $data): array {
+        $this->logger->info('Processing gas data', [
+            'recordCount' => count($data)
+        ]);
+
         // Remove null entries first
         $processedData = $this->removeNullEntriesByKey($data, 'total_price_tax_included');
-        return $this->addGasRanking($processedData);
+        $processedData = $this->addRanking($processedData, 'total_price_tax_included', 'rank_total_price', true);
+
+        $this->logger->debug('Processed gas data', [
+            'processedRecords' => count($processedData)
+        ]);
+
+        return $processedData;
     }
 
     public function addGasRanking (array $data): array {
@@ -108,13 +136,22 @@ class DataService implements DataServiceInterface {
     /**
      * @throws Exception
      */
-    function save_actual_data_to_file($data, $filename): bool {
-        $jsonData = json_encode($data, JSON_PRETTY_PRINT);
+    public function save_actual_data_to_file(array $data, string $filename): bool {
+        $this->logger->info('Saving data to file', [
+            'filename' => $filename,
+            'dataSize' => strlen(json_encode($data))
+        ]);
 
-        if (file_put_contents($filename, $jsonData)) {
+        try {
+            file_put_contents($filename, json_encode($data, JSON_PRETTY_PRINT));
+            $this->logger->debug('Successfully saved data to file');
             return true;
-        } else {
-            throw new Exception('Error writing file');
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to save data to file', [
+                'error' => $e->getMessage(),
+                'filename' => $filename
+            ]);
+            return false;
         }
     }
 
@@ -130,10 +167,15 @@ class DataService implements DataServiceInterface {
         return "./../data/data_{$type}_{$date}.json";
     }
 
-    function checkCache($filename): bool|array {
+    public function checkCache(string $filename): array|bool {
+        $this->logger->debug('Checking cache', ['filename' => $filename]);
+
         if (file_exists($filename)) {
+            $this->logger->info('Cache hit', ['filename' => $filename]);
             return json_decode(file_get_contents($filename), true);
         }
+
+        $this->logger->info('Cache miss', ['filename' => $filename]);
         return false;
     }
 
