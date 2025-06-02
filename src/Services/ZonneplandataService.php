@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Services;
 
@@ -49,7 +50,7 @@ class ZonneplandataService implements ZonneplandataServiceInterface {
      * @return array The API response data
      * @throws InvalidArgumentException If the date format is invalid
      */
-    public function getData($type, ?string $date = null): array {
+    public function getData(string $type, ?string $date = null): array {
         $this->logger->info('Fetching {type} data', [
             'type' => $type,
             'date' => $date
@@ -82,7 +83,7 @@ class ZonneplandataService implements ZonneplandataServiceInterface {
         return $response;
     }
 
-    public function is_empty($data): bool {
+    public function is_empty(array $data): bool {
         return empty($data['data']) || empty($data['data'][0]['total_price_tax_included']);
     }
 
