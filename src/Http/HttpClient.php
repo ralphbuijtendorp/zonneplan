@@ -10,6 +10,8 @@ class HttpClient
 {
     private Client $client;
     private array $config;
+    private const MAX_RETRIES = 3;
+    private const RETRY_DELAY_MS = 1000; // 1 second
 
     public function __construct()
     {
@@ -20,20 +22,43 @@ class HttpClient
 
     public function get(string $endpoint, array $queryParams = []): array
     {
-        try {
-            $secret = $this->config['zonneplan']['secret'];
-            
-            if (empty($secret)) {
-                throw new \RuntimeException('ZONNEPLAN_API_SECRET environment variable is not set');
+        $attempt = 1;
+        $lastException = null;
+
+        while ($attempt <= self::MAX_RETRIES) {
+            try {
+                $secret = $this->config['zonneplan']['secret'];
+                
+                if (empty($secret)) {
+                    throw new \RuntimeException('ZONNEPLAN_API_SECRET environment variable is not set');
+                }
+
+                $queryParams['secret'] = $secret;
+                
+                $response = $this->client->get($endpoint, ['query' => $queryParams]);
+                $data = json_decode($response->getBody()->getContents(), true);
+
+                return $data;
+
+            } catch (GuzzleException $e) {
+                $lastException = $e;
+                
+                if ($attempt < self::MAX_RETRIES) {
+                    $delay = self::RETRY_DELAY_MS * pow(2, $attempt - 1);
+                    usleep($delay * 1000);
+                }
+                
+                $attempt++;
             }
-
-            $queryParams['secret'] = $secret;
-            
-            $response = $this->client->get($endpoint, ['query' => $queryParams]);
-
-            return json_decode($response->getBody()->getContents(), true);
-        } catch (GuzzleException $e) {
-            throw new \RuntimeException('Failed to fetch data from Zonneplan API: ' . $e->getMessage());
         }
+
+        // Als we hier komen zijn alle retries mislukt
+        throw new \RuntimeException(
+            sprintf(
+                'Failed to fetch data from Zonneplan API after %d attempts: %s',
+                self::MAX_RETRIES,
+                $lastException->getMessage()
+            )
+        );
     }
 }

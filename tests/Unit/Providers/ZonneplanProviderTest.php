@@ -7,6 +7,7 @@ use App\Http\HttpClient;
 use App\Interfaces\EnergyProviderInterface;
 use App\Providers\ZonneplanProvider;
 use InvalidArgumentException;
+use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
@@ -17,6 +18,9 @@ class ZonneplanProviderTest extends TestCase
     private MockObject $httpClientMock;
     private MockObject $loggerMock;
 
+    /**
+     * @throws Exception
+     */
     protected function setUp(): void
     {
         // Create mocks
