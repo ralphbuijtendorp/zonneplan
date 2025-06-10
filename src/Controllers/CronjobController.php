@@ -56,7 +56,7 @@ class CronjobController extends BaseController {
      * @param ServerRequestInterface $request The incoming HTTP request
      * @return ResponseInterface Response indicating success or failure of the operation
      */
-    public function store_electricity_data(ServerRequestInterface $request): ResponseInterface {
+    public function storeElectricityData(ServerRequestInterface $request): ResponseInterface {
         $this->logger->info('Starting electricity data cronjob');
 
         $retrieval_dates = [];
@@ -74,7 +74,7 @@ class CronjobController extends BaseController {
                 # Retrieve the data from the external source
                 $rawData = $this->energyProvider->getData('electricity', $retrieval_date);
 
-                if ($this->energyProvider->is_empty($rawData)) {
+                if ($this->energyProvider->isEmpty($rawData)) {
                     $this->logger->warning('No electricity data available from API', [
                         'date' => $retrieval_date
                     ]);
@@ -99,7 +99,7 @@ class CronjobController extends BaseController {
                     'date' => $retrieval_date,
                     'recordCount' => count($processedData)
                 ]);
-                $this->DataService->save_actual_data_to_file($data_object, $filename);
+                $this->DataService->saveActualDataToFile($data_object, $filename);
             }
             return $this->response(array("result" => "Json object stored successfully"), 200);
 
@@ -117,7 +117,7 @@ class CronjobController extends BaseController {
      * @param ServerRequestInterface $request The incoming HTTP request
      * @return ResponseInterface Response indicating success or failure of the operation
      */
-    public function store_gas_data(ServerRequestInterface $request): ResponseInterface {
+    public function storeGasData(ServerRequestInterface $request): ResponseInterface {
         $this->logger->info('Starting gas data cronjob');
 
         $retrieval_date = $this->DataService->getCurrentDate();
@@ -149,7 +149,7 @@ class CronjobController extends BaseController {
                     'date' => $retrieval_date,
                     'recordCount' => count($processedData)
                 ]);
-                $this->DataService->save_actual_data_to_file($data_object, $filename);
+                $this->DataService->saveActualDataToFile($data_object, $filename);
             }
 
             return $this->response(array("result" => "Json object stored successfully"), 200);

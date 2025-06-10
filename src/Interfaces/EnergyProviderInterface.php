@@ -23,5 +23,5 @@ interface EnergyProviderInterface
      * @param array $data The response data to check
      * @return bool True if the data is empty
      */
-    public function is_empty(array $data): bool;
+    public function isEmpty(array $data): bool;
 }

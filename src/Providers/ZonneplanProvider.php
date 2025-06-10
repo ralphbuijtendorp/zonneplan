@@ -88,7 +88,8 @@ class ZonneplanProvider implements EnergyProviderInterface
      * @param array $data API response data to check
      * @return bool True if data is effectively empty, false otherwise
      */
-    public function is_empty(array $data): bool
+
+    public function isEmpty(array $data): bool
     {
         if (empty($data['data'])) {
             return true;

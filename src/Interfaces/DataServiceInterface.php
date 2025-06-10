@@ -47,7 +47,7 @@ interface DataServiceInterface
      * @return bool Success status
      * @throws Exception If file write fails
      */
-    public function save_actual_data_to_file(array $data, string $filename): bool;
+    public function saveActualDataToFile(array $data, string $filename): bool;
 
     /**
      * Check if data exists in cache

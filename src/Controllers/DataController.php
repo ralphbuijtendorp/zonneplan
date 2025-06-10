@@ -56,7 +56,7 @@ class DataController extends BaseController {
      * @param ServerRequestInterface $request The incoming HTTP request with optional date parameter
      * @return ResponseInterface Response containing electricity pricing data or error
      */
-    public function get_electricity_data(ServerRequestInterface $request): ResponseInterface {
+    public function getElectricityData(ServerRequestInterface $request): ResponseInterface {
         $this->logger->info('Handling electricity data request', [
             'query' => $request->getQueryParams()
         ]);
@@ -81,7 +81,7 @@ class DataController extends BaseController {
                 # Retrieve the data from the external source
                 $rawData = $this->energyProvider->getData('electricity', $date);
 
-                if ($this->energyProvider->is_empty($rawData)) {
+                if ($this->energyProvider->isEmpty($rawData)) {
                     $this->logger->warning('Empty electricity data received', [
                         'date' => $date
                     ]);
@@ -101,7 +101,7 @@ class DataController extends BaseController {
                 );
 
                 # Save the array as a json object
-                $this->DataService->save_actual_data_to_file($data_object, $filename);
+                $this->DataService->saveActualDataToFile($data_object, $filename);
 
                 $this->logger->info('Successfully processed and cached electricity data', [
                     'recordCount' => count($processedData)
@@ -131,7 +131,7 @@ class DataController extends BaseController {
      * @param ServerRequestInterface $request The incoming HTTP request with optional date parameter
      * @return ResponseInterface Response containing gas pricing data or error
      */
-    public function get_gas_data(ServerRequestInterface $request): ResponseInterface {
+    public function getGasData(ServerRequestInterface $request): ResponseInterface {
         $this->logger->info('Handling gas data request', [
             'query' => $request->getQueryParams()
         ]);
@@ -156,7 +156,7 @@ class DataController extends BaseController {
                 # Retrieve the data from the external source
                 $rawData = $this->energyProvider->getData('gas');
 
-                if ($this->energyProvider->is_empty($rawData)) {
+                if ($this->energyProvider->isEmpty($rawData)) {
                     $this->logger->warning('Empty gas data received', [
                         'date' => $date
                     ]);
@@ -176,7 +176,7 @@ class DataController extends BaseController {
                 );
 
                 # Save the array as a json object
-                $this->DataService->save_actual_data_to_file($data_object, $filename);
+                $this->DataService->saveActualDataToFile($data_object, $filename);
 
                 $this->logger->info('Successfully processed and cached gas data', [
                     'recordCount' => count($processedData)

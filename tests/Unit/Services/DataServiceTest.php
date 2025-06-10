@@ -19,8 +19,8 @@ class TestableDataService extends DataService {
         return $this->removeNullEntriesByKey($data, $key);
     }
 
-    public function publicAddRanking(array $data, string $key, string $rankKey, bool $lower_is_better = true): array {
-        return $this->addRanking($data, $key, $rankKey, $lower_is_better);
+    public function publicAddRanking(array $data, string $key, string $rankKey, bool $lowerIsBetter = true): array {
+        return $this->addRanking($data, $key, $rankKey, $lowerIsBetter);
     }
 
     public function publicGetEntryByRanking(array $dataArray, string $rankingKey, bool $highest = true): array {
@@ -181,7 +181,7 @@ class DataServiceTest extends TestCase
         $testData = ['test' => 'data'];
         $tempFile = sys_get_temp_dir() . '/test_data.json';
 
-        $result = $this->dataService->save_actual_data_to_file($testData, $tempFile);
+        $result = $this->dataService->saveActualDataToFile($testData, $tempFile);
         $this->assertTrue($result);
         $this->assertTrue(file_exists($tempFile));
         $this->assertEquals($testData, json_decode(file_get_contents($tempFile), true));

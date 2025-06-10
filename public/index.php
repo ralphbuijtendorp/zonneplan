@@ -45,9 +45,9 @@ $app->options('/{routes:.+}', function ($request, $response) {
  */
 $app->addErrorMiddleware(true, true, true);
 
-$app->get('/execute_cronjob_electricity', [CronjobController::class, 'store_electricity_data']);
-$app->get('/execute_cronjob_gas', [CronjobController::class, 'store_gas_data']);
-$app->get('/get_electricity_data', [DataController::class, 'get_electricity_data']);
-$app->get('/get_gas_data', [DataController::class, 'get_gas_data']);
+$app->get('/execute_cronjob_electricity', [CronjobController::class, 'storeElectricityData']);
+$app->get('/execute_cronjob_gas', [CronjobController::class, 'storeGasData']);
+$app->get('/get_electricity_data', [DataController::class, 'getElectricityData']);
+$app->get('/get_gas_data', [DataController::class, 'getGasData']);
 
 $app->run();

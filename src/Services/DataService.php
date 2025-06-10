@@ -39,16 +39,16 @@ class DataService implements DataServiceInterface {
      * @param array $data The array of energy data entries to rank
      * @param string $key The key in each entry to rank by (e.g., 'total_price_tax_included')
      * @param string $rankKey The key to store the ranking in each entry
-     * @param bool $lower_is_better If true, lower values get better rankings
+     * @param bool $lowerIsBetter If true, lower values get better rankings
      * @return array The data array with added rankings
      */
-    protected function addRanking(array $data, string $key, string $rankKey, bool $lower_is_better = true): array {
+    protected function addRanking(array $data, string $key, string $rankKey, bool $lowerIsBetter = true): array {
         $ranked = [];
         foreach ($data as $index => $item) {
             $ranked[$index] = ['value' => $item[$key], 'index' => $index];
         }
 
-        if ($lower_is_better) {
+        if ($lowerIsBetter) {
             usort($ranked, function ($a, $b) { return $a['value'] <=> $b['value'];});
         } else {
             usort($ranked, function ($a, $b) { return $b['value'] <=> $a['value'];});
@@ -113,7 +113,7 @@ class DataService implements DataServiceInterface {
      * @param array $data Electricity data to rank
      * @return array Data with added rankings
      */
-    public function addElectricityRanking (array $data): array {
+    public function addElectricityRanking(array $data): array {
         // Add rankings
         $data = $this->addRanking($data, 'total_price_tax_included', 'rank_total_price');
         return $this->addRanking($data, 'sustainability_score', 'rank_sustainability_score', false);
@@ -151,7 +151,7 @@ class DataService implements DataServiceInterface {
      * @param array $data Gas data to rank
      * @return array Data with added rankings
      */
-    public function addGasRanking (array $data): array {
+    public function addGasRanking(array $data): array {
         // Add rankings
         return $this->addRanking($data, 'total_price_tax_included', 'rank_total_price');
     }
@@ -168,14 +168,14 @@ class DataService implements DataServiceInterface {
      * @return EnergyRecordsDTO DTO containing notable records
      */
     public function getElectricityRecords(array $data): EnergyRecordsDTO {
-        $lowest_price = $this->getEntryByRanking($data, 'total_price_tax_included', false);
-        $highest_price = $this->getEntryByRanking($data, 'total_price_tax_included', true);
-        $highest_sustainability = $this->getEntryByRanking($data, 'rank_sustainability_score', false);
+        $lowestPrice = $this->getEntryByRanking($data, 'total_price_tax_included', false);
+        $highestPrice = $this->getEntryByRanking($data, 'total_price_tax_included', true);
+        $highestSustainability = $this->getEntryByRanking($data, 'rank_sustainability_score', false);
 
         return new EnergyRecordsDTO(
-            priceLow: EnergyDataDTO::fromArray($lowest_price),
-            priceHigh: EnergyDataDTO::fromArray($highest_price),
-            sustainabilityHigh: EnergyDataDTO::fromArray($highest_sustainability)
+            priceLow: EnergyDataDTO::fromArray($lowestPrice),
+            priceHigh: EnergyDataDTO::fromArray($highestPrice),
+            sustainabilityHigh: EnergyDataDTO::fromArray($highestSustainability)
         );
     }
 
@@ -190,12 +190,12 @@ class DataService implements DataServiceInterface {
      * @return EnergyRecordsDTO DTO containing notable records
      */
     public function getGasRecords(array $data): EnergyRecordsDTO {
-        $lowest_price = $this->getEntryByRanking($data, 'total_price_tax_included', false);
-        $highest_price = $this->getEntryByRanking($data, 'total_price_tax_included', true);
+        $lowestPrice = $this->getEntryByRanking($data, 'total_price_tax_included', false);
+        $highestPrice = $this->getEntryByRanking($data, 'total_price_tax_included', true);
 
         return new EnergyRecordsDTO(
-            priceLow: EnergyDataDTO::fromArray($lowest_price),
-            priceHigh: EnergyDataDTO::fromArray($highest_price)
+            priceLow: EnergyDataDTO::fromArray($lowestPrice),
+            priceHigh: EnergyDataDTO::fromArray($highestPrice)
         );
     }
 
@@ -233,7 +233,15 @@ class DataService implements DataServiceInterface {
      * @return bool True if save was successful, false otherwise
      * @throws Exception If file writing fails
      */
-    public function save_actual_data_to_file(array $data, string $filename): bool {
+    /**
+     * Saves processed energy data to a JSON file.
+     *
+     * @param array $data The data to save
+     * @param string $filename Target filename including path
+     * @return bool True if save was successful, false otherwise
+     * @throws Exception If file writing fails
+     */
+    public function saveActualDataToFile(array $data, string $filename): bool {
         $this->logger->info('Saving data to file', [
             'filename' => $filename,
             'dataSize' => strlen(json_encode($data))

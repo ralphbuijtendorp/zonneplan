@@ -104,10 +104,10 @@ class ZonneplanProviderTest extends TestCase
     public function testIsEmptyWithEmptyData(): void
     {
         $emptyData = ['data' => []];
-        $this->assertTrue($this->energyProvider->is_empty($emptyData));
+        $this->assertTrue($this->energyProvider->isEmpty($emptyData));
         
         $nullPriceData = ['data' => [['total_price_tax_included' => null]]];
-        $this->assertTrue($this->energyProvider->is_empty($nullPriceData));
+        $this->assertTrue($this->energyProvider->isEmpty($nullPriceData));
     }
 
     public function testIsEmptyWithValidData(): void
@@ -118,6 +118,6 @@ class ZonneplanProviderTest extends TestCase
             ]
         ];
         
-        $this->assertFalse($this->energyProvider->is_empty($validData));
+        $this->assertFalse($this->energyProvider->isEmpty($validData));
     }
 }
