@@ -52,7 +52,6 @@ class HttpClient
             }
         }
 
-        // Als we hier komen zijn alle retries mislukt
         throw new \RuntimeException(
             sprintf(
                 'Failed to fetch data from Zonneplan API after %d attempts: %s',

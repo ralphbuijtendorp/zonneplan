@@ -3,6 +3,7 @@
 namespace App\Interfaces;
 
 use App\DTOs\EnergyRecordsDTO;
+use Exception;
 
 interface DataServiceInterface
 {
@@ -44,7 +45,7 @@ interface DataServiceInterface
      * @param array $data Data to save
      * @param string $filename Target filename
      * @return bool Success status
-     * @throws \Exception If file write fails
+     * @throws Exception If file write fails
      */
     public function save_actual_data_to_file(array $data, string $filename): bool;
 

@@ -9,11 +9,31 @@ use Psr\Log\LoggerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
+/**
+ * Controller for handling energy data retrieval requests.
+ *
+ * This controller provides endpoints for retrieving electricity and gas pricing data.
+ * It implements a caching strategy to minimize external API calls and handles both
+ * real-time and historical data requests.
+ */
 class DataController extends BaseController {
+    /** @var LoggerInterface For logging data operations */
     private LoggerInterface $logger;
+    
+    /** @var EnergyProviderInterface Service for fetching energy data from external sources */
     private EnergyProviderInterface $energyProvider;
+    
+    /** @var DataServiceInterface Service for processing and managing energy data */
     private DataServiceInterface $DataService;
 
+    /**
+     * Constructor for DataController
+     *
+     * @param ResponseService $responseService Service for creating HTTP responses
+     * @param EnergyProviderInterface $energyProvider Service for fetching energy data
+     * @param DataServiceInterface $DataService Service for processing and managing data
+     * @param LoggerInterface $logger Logging service
+     */
     public function __construct(
         ResponseService $responseService,
         EnergyProviderInterface $energyProvider,
@@ -26,6 +46,16 @@ class DataController extends BaseController {
         $this->logger = $logger;
     }
 
+    /**
+     * Retrieves electricity pricing data for a specific date.
+     *
+     * This endpoint returns electricity pricing data either from cache or by fetching
+     * from the external provider if not cached. If no date is specified, it returns
+     * data for the current date.
+     *
+     * @param ServerRequestInterface $request The incoming HTTP request with optional date parameter
+     * @return ResponseInterface Response containing electricity pricing data or error
+     */
     public function get_electricity_data(ServerRequestInterface $request): ResponseInterface {
         $this->logger->info('Handling electricity data request', [
             'query' => $request->getQueryParams()
@@ -91,6 +121,16 @@ class DataController extends BaseController {
         }
     }
 
+    /**
+     * Retrieves gas pricing data for a specific date.
+     *
+     * This endpoint returns gas pricing data either from cache or by fetching
+     * from the external provider if not cached. It currently returns
+     * data for the current date.
+     *
+     * @param ServerRequestInterface $request The incoming HTTP request with optional date parameter
+     * @return ResponseInterface Response containing gas pricing data or error
+     */
     public function get_gas_data(ServerRequestInterface $request): ResponseInterface {
         $this->logger->info('Handling gas data request', [
             'query' => $request->getQueryParams()

@@ -9,11 +9,31 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Controller responsible for handling scheduled data retrieval tasks.
+ *
+ * This controller manages periodic tasks for fetching and storing energy pricing data
+ * from external providers. It handles both electricity and gas data retrieval,
+ * processes the data, and stores it in the local cache.
+ */
 class CronjobController extends BaseController {
+    /** @var LoggerInterface For logging cronjob operations */
     private LoggerInterface $logger;
+    
+    /** @var EnergyProviderInterface Service for fetching energy data from external sources */
     private EnergyProviderInterface $energyProvider;
+    
+    /** @var DataService Service for processing and storing energy data */
     private DataService $DataService;
 
+    /**
+     * Constructor for CronjobController
+     *
+     * @param ResponseService $responseService Service for creating HTTP responses
+     * @param EnergyProviderInterface $energyProvider Service for fetching energy data
+     * @param DataService $DataService Service for processing and storing data
+     * @param LoggerInterface $logger Logging service
+     */
     public function __construct(
         ResponseService $responseService,
         EnergyProviderInterface $energyProvider,
@@ -26,7 +46,16 @@ class CronjobController extends BaseController {
         $this->logger = $logger;
     }
 
-    // This is the function to retrieve the electricity data for today and tomorrow
+    /**
+     * Retrieves and stores electricity pricing data for today and tomorrow.
+     *
+     * This endpoint fetches electricity pricing data from the energy provider,
+     * processes it, and stores it in the local cache. It handles data for both
+     * the current day and the following day.
+     *
+     * @param ServerRequestInterface $request The incoming HTTP request
+     * @return ResponseInterface Response indicating success or failure of the operation
+     */
     public function store_electricity_data(ServerRequestInterface $request): ResponseInterface {
         $this->logger->info('Starting electricity data cronjob');
 
@@ -79,7 +108,15 @@ class CronjobController extends BaseController {
         }
     }
 
-    // This is the function to retrieve the electricity data for today and tomorrow
+    /**
+     * Retrieves and stores gas pricing data for the current day.
+     *
+     * This endpoint fetches gas pricing data from the energy provider,
+     * processes it, and stores it in the local cache.
+     *
+     * @param ServerRequestInterface $request The incoming HTTP request
+     * @return ResponseInterface Response indicating success or failure of the operation
+     */
     public function store_gas_data(ServerRequestInterface $request): ResponseInterface {
         $this->logger->info('Starting gas data cronjob');
 
